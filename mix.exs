@@ -1,7 +1,7 @@
 defmodule Phtmx.MixProject do
   use Mix.Project
 
-  @version "0.1.0"
+  @version "0.2.0"
   @source_url "https://github.com/Gearhartlove/phtmx"
 
   def project do
@@ -27,6 +27,9 @@ defmodule Phtmx.MixProject do
     [
       {:phoenix, "~> 1.8"},
       {:jason, "~> 1.2"},
+      # Install-time only: powers `mix phtmx.install`. Optional so it stays out
+      # of consumers' runtime dependency closure.
+      {:igniter, "~> 0.8", optional: true},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end

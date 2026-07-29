@@ -17,22 +17,32 @@ templating layer — `Phtmx` only owns the request/response plumbing.
 
 ## Installation
 
-> Not yet published to Hex. For now, depend on it via git:
+The fastest path is the [Igniter](https://hexdocs.pm/igniter) installer, which
+adds the dependency and does all the wiring below for you — router plug,
+response import, CSRF header, and vendoring htmx.js:
+
+```bash
+mix igniter.install phtmx
+```
+
+Options: `--pipeline` (default `browser`), `--htmx-version` (default `2.0.4`),
+and `--skip-asset-fetch` (wire the `app.js` import but don't download htmx —
+useful offline or in CI). Each edit is idempotent and, if it can't find its
+anchor, prints a notice with the exact snippet instead of guessing — and you
+review the full diff before anything is written.
+
+Prefer to wire it by hand? Add the dependency and follow **Setup** below:
 
 ```elixir
-# mix.exs
 def deps do
-  [
-    {:phtmx, github: "Gearhartlove/phtmx"}
-  ]
+  [{:phtmx, "~> 0.2"}]
 end
 ```
 
-Once published, this becomes `{:phtmx, "~> 0.1"}`.
-
 ## Setup
 
-Three edits wire it into a standard Phoenix 1.8 app.
+If you used the installer, skip this — it's already done. Otherwise, three edits
+wire phtmx into a standard Phoenix 1.8 app.
 
 **1. Add the plug to your `:browser` pipeline**, right after `:put_root_layout`:
 
