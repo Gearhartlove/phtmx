@@ -107,6 +107,7 @@ renders the *same* component alone. No duplicate markup, no drift.
 **1. Write the fragment as a function component:**
 
 ```elixir
+# counter_html.ex
 attr :count, :integer, required: true
 
 def counter(assigns) do
@@ -119,9 +120,11 @@ def counter(assigns) do
   </div>
   """
 end
+
+# *.heex
+<.counter count={@count} />
 ```
 
-Render it in your full page inside `<Layouts.app>`: `<.counter count={@count} />`.
 
 **2. Add a route and an action** that renders *just the component*:
 
@@ -131,20 +134,49 @@ post "/counter/increment", CounterController, :increment
 
 # counter_controller.ex
 def increment(conn, _params) do
-  new_count = next_count(conn)
+  new_count = get_count(conn) + 1
 
   conn
-  |> put_htmx_trigger("counter:changed")     # optional: fire a client event
-  |> render(:counter, count: new_count)       # root layout already stripped by Phtmx.Plug
+  |> put_session(:count, new_count)
+  # optional: fire a client event
+  |> put_htmx_trigger("counter:changed")
+  # root layout already stripped by Phtmx.Plug
+  |> render(:counter, count: new_count)
 end
+
+def get_count(conn), do: get_session(conn, :count) || 0
 ```
 
-**3. (Optional) React to the triggered event** anywhere on the page:
+_note: you will need to assign a default value for `@count` because we require it in the `attr` `opts`. This is not tutorialed because it is trivial and can be done a number of ways. One such method is assigning count with `put_session(conn, :count, count).`_
 
-```heex
-<div id="activity" hx-get={~p"/counter/activity"} hx-trigger="counter:changed from:body">
-  <.activity count={@count} />
-</div>
+**Bonus. (Optional) React to the triggered event** anywhere on the page:
+
+Here we use all the skills we previously demonstrated; we are piggy-backing off the `put_htmx_trigger("counter:changed")` code from the `increment` controller function. This example shows how elements can update other elements using events with specific names.
+
+```elixir
+# counter_html.ex
+def activity(assigns) do
+  ~H"""
+  <div
+    id="activity"
+    hx-get={~p"/counter/activity"}
+    hx-trigger="counter:changed from:body"
+    hx-target="#activity"
+    hx-swap="outerHTML"
+  >
+    <p>{"Counter changed at #{DateTime.utc_now()}"}</p>
+  </div>
+  """
+end
+
+# *.heex 
+<.activity />
+
+# router.ex
+get "/counter/activity", PageController, :activity
+
+# counter_controller.ex
+def activity(conn, _params), do: render(conn, :activity)
 ```
 
 ## Response helpers
@@ -160,7 +192,7 @@ headers:
 | `htmx_retarget/2` | `HX-Retarget` | Change which element the response swaps into |
 | `htmx_reswap/2` | `HX-Reswap` | Change how the response is swapped in |
 
-_note: I wanted a small subset of useful helpers, not everything under the sun to start._
+_note: phtmx intentionally supports a small subset of what's possible. We can add more upon request and with what makes the most sense._
 
 ## License
 

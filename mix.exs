@@ -1,7 +1,7 @@
 defmodule Phtmx.MixProject do
   use Mix.Project
 
-  @version "0.2.0"
+  @version "0.2.2"
   @source_url "https://github.com/Gearhartlove/phtmx"
 
   def project do
@@ -35,9 +35,7 @@ defmodule Phtmx.MixProject do
   end
 
   defp description do
-    "A tiny, convention-over-configuration HTMX integration for Phoenix: a " <>
-      "layout-stripping plug, a parsed request struct, and HX-* response helpers. " <>
-      "Keep your HEEx templates, drop the JSON."
+    "A tiny, convention-over-configuration HTMX integration for Phoenix."
   end
 
   defp package do
