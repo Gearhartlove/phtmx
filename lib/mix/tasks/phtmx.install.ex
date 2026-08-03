@@ -113,7 +113,6 @@ if Code.ensure_loaded?(Igniter) do
 
       Mod.find_and_update_module!(igniter, web, fn zipper ->
         with {:ok, zipper} <- Function.move_to_def(zipper, :controller, 0),
-             {:ok, zipper} <- Common.move_to_do_block(zipper),
              {:ok, zipper} <- Function.move_to_function_call(zipper, :quote, 1),
              {:ok, zipper} <- Common.move_to_do_block(zipper) do
           if function_call_present?(zipper, :import, Phtmx.Response) do
