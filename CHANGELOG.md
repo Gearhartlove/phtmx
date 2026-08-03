@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- `mix igniter.install phtmx` was adding `import Phtmx.Response` to the web
+  module's `live_view/0` instead of `controller/0` — an extra, redundant
+  zipper traversal caused the anchor search to overshoot past `controller/0`
+  and land on the next `quote/1` call in the module, which is `live_view/0`'s.
+  The import now lands in `controller/0` as documented.
+
 ## [0.2.0]
 
 ### Added

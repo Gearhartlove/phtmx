@@ -25,6 +25,26 @@ defmodule Mix.Tasks.Phtmx.InstallTest do
     """)
   end
 
+  test "adds import Phtmx.Response inside controller/0, not live_view/0" do
+    content =
+      install().rewrite
+      |> Rewrite.source!("lib/test_web.ex")
+      |> Rewrite.Source.get(:content)
+
+    [controller_body] =
+      Regex.run(~r/def controller do(.*?)\n  end\n\n  def live_view do/s, content,
+        capture: :all_but_first
+      )
+
+    [live_view_body] =
+      Regex.run(~r/def live_view do(.*?)\n  end\n\n  def live_component do/s, content,
+        capture: :all_but_first
+      )
+
+    assert controller_body =~ "import Phtmx.Response"
+    refute live_view_body =~ "import Phtmx.Response"
+  end
+
   test "adds the CSRF hx-headers attribute to the root layout <body>" do
     install()
     |> assert_has_patch("lib/test_web/components/layouts/root.html.heex", """
