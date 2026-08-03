@@ -1,24 +1,20 @@
 # Phtmx
 
-A tiny, convention-over-configuration [HTMX](https://htmx.org) integration for
-Phoenix. Build interactive UIs by returning HTML **fragments** over plain HTTP —
-keep your HEEx templates, drop the JSON, skip the WebSocket.
+A tiny, convention-over-configuration [HTMX](https://htmx.org) integration for Phoenix. 
 
-`Phtmx` is four small modules and no framework:
+`Phtmx` is three small modules:
 
-- **`Phtmx.Plug`** — detects HTMX requests via the `HX-*` headers and strips the
-  root layout so responses are bare fragments.
-- **`Phtmx.Request`** — the parsed request metadata, assigned to
-  `conn.assigns.htmx` (`@htmx`).
-- **`Phtmx.Response`** — controller helpers for the `HX-*` response headers.
+- **`Phtmx.Plug`** - detects HTMX requests via the `HX-*` headers and strips the root layout so responses are bare fragments.
+- **`Phtmx.Request`** - the parsed request metadata, assigned to `conn.assigns.htmx` (`@htmx`).
+- **`Phtmx.Response`** - controller helpers for the `HX-*` response headers.
 
-It targets **Phoenix 1.8+** and keeps `Phoenix.Component`/HEEx as your
-templating layer — `Phtmx` only owns the request/response plumbing.
+Phtmx targets **Phoenix 1.8+** and keeps `Phoenix.Component`/HEEx as your
+templating layer - `Phtmx` only owns the request/response plumbing.
 
 ## Installation
 
 The fastest path is the [Igniter](https://hexdocs.pm/igniter) installer, which
-adds the dependency and does all the wiring below for you — router plug,
+adds the dependency and does all the wiring below for you - router plug,
 response import, CSRF header, and vendoring htmx.js:
 
 ```bash
@@ -26,9 +22,9 @@ mix igniter.install phtmx
 ```
 
 Options: `--pipeline` (default `browser`), `--htmx-version` (default `2.0.4`),
-and `--skip-asset-fetch` (wire the `app.js` import but don't download htmx —
+and `--skip-asset-fetch` (wire the `app.js` import but don't download htmx -
 useful offline or in CI). Each edit is idempotent and, if it can't find its
-anchor, prints a notice with the exact snippet instead of guessing — and you
+anchor, prints a notice with the exact snippet instead of guessing - and you
 review the full diff before anything is written.
 
 Prefer to wire it by hand? Add the dependency and follow **Setup** below:
@@ -41,7 +37,7 @@ end
 
 ## Setup
 
-If you used the installer, skip this — it's already done. Otherwise, three edits
+If you used the installer, skip this - it's already done. Otherwise, three edits
 wire phtmx into a standard Phoenix 1.8 app.
 
 **1. Add the plug to your `:browser` pipeline**, right after `:put_root_layout`:
@@ -75,7 +71,7 @@ end
 ```
 
 **3. Satisfy CSRF declaratively** by putting the token on `<body>` in your root
-layout — Phoenix's existing `:protect_from_forgery` accepts the `x-csrf-token`
+layout - Phoenix's existing `:protect_from_forgery` accepts the `x-csrf-token`
 header, and every HTMX request in the page inherits it (no JavaScript):
 
 ```heex
@@ -84,19 +80,19 @@ header, and every HTMX request in the page inherits it (no JavaScript):
 </body>
 ```
 
-Finally, load the htmx client however you prefer — vendor a pinned
+Finally, load the htmx client however you prefer - vendor a pinned
 `htmx.min.js` into `assets/vendor/` and `import` it from `app.js` (recommended),
 or use a CDN/npm. `Phtmx` is server-side only and deliberately ships no
 JavaScript.
 
 ## How it works
 
-An HTMX request wants just the fragment to swap in — not the `<html>`/`<head>`
+An HTMX request wants just the fragment to swap in - not the `<html>`/`<head>`
 shell. `Phtmx.Plug` disables the root layout for any request carrying
 `HX-Request: true`, so whatever the controller renders is returned on its own.
 
 Boosted navigations and targeted swaps both send `HX-Request: true`, so both get
-the root layout stripped — the difference is simply *what the controller
+the root layout stripped - the difference is simply *what the controller
 renders*: a full page template (which still includes your `<Layouts.app>`) for a
 boost, or a single function component for a targeted swap.
 
@@ -151,8 +147,6 @@ end
 </div>
 ```
 
-That's it — no layout wrangling, no serializers, no sockets.
-
 ## Response helpers
 
 `Phtmx.Response` provides thin, documented wrappers over the `HX-*` response
@@ -160,11 +154,13 @@ headers:
 
 | Helper | Header | Use |
 | --- | --- | --- |
-| `htmx_redirect/2` | `HX-Redirect` | Full browser navigation (use instead of `redirect/2` — a 302 gets swapped, not followed) |
+| `htmx_redirect/2` | `HX-Redirect` | Full browser navigation (use instead of `redirect/2` - a 302 gets swapped, not followed) |
 | `htmx_location/2` | `HX-Location` | Client-side navigation without a full reload |
 | `put_htmx_trigger/2` | `HX-Trigger` | Fire client events (string, list, or a JSON-encoded map) |
 | `htmx_retarget/2` | `HX-Retarget` | Change which element the response swaps into |
 | `htmx_reswap/2` | `HX-Reswap` | Change how the response is swapped in |
+
+_note: I wanted a small subset of useful helpers, not everything under the sun to start._
 
 ## License
 
