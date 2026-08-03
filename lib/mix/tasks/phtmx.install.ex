@@ -7,14 +7,18 @@ if Code.ensure_loaded?(Igniter) do
 
         mix igniter.install phtmx
 
-    It performs four edits, each idempotent and each degrading to a printed
+    It performs five edits, each idempotent and each degrading to a printed
     notice (rather than a guessed edit) if it can't confidently locate the
     anchor — you always review the full diff before anything is written:
 
       1. adds `plug Phtmx.Plug` to the `:browser` router pipeline;
       2. adds `import Phtmx.Response` to the web module's `controller/0`;
       3. adds the CSRF `hx-headers` attribute to `<body>` in the root layout;
-      4. vendors `htmx.min.js` into `assets/vendor/` and imports it from
+      4. disables HEEx debug annotations (`debug_heex_annotations: false` for
+         `:phoenix_live_view` in `config/dev.exs`) — left enabled, htmx swaps
+         scatter `<!-- <MyAppWeb...> -->` component-source comments across the
+         DOM every time a fragment is swapped in;
+      5. vendors `htmx.min.js` into `assets/vendor/` and imports it from
          `assets/js/app.js`.
 
     ## Options
@@ -24,6 +28,8 @@ if Code.ensure_loaded?(Igniter) do
       * `--skip-asset-fetch` - don't download htmx; still wires the `app.js`
         import and prints a notice so you can vendor it yourself (useful offline
         or in CI)
+      * `--keep-heex-annotations` - leave HEEx debug annotations as configured
+        instead of disabling them
     """
 
     use Igniter.Mix.Task
@@ -31,6 +37,7 @@ if Code.ensure_loaded?(Igniter) do
     alias Igniter.Code.Common
     alias Igniter.Code.Function
     alias Igniter.Libs.Phoenix
+    alias Igniter.Project.Config
     alias Igniter.Project.Module, as: Mod
 
     @htmx_default_version "2.0.4"
@@ -40,11 +47,17 @@ if Code.ensure_loaded?(Igniter) do
       %Igniter.Mix.Task.Info{
         group: :phtmx,
         example: "mix igniter.install phtmx",
-        schema: [pipeline: :string, htmx_version: :string, skip_asset_fetch: :boolean],
+        schema: [
+          pipeline: :string,
+          htmx_version: :string,
+          skip_asset_fetch: :boolean,
+          keep_heex_annotations: :boolean
+        ],
         defaults: [
           pipeline: "browser",
           htmx_version: @htmx_default_version,
-          skip_asset_fetch: false
+          skip_asset_fetch: false,
+          keep_heex_annotations: false
         ]
       }
     end
@@ -58,6 +71,7 @@ if Code.ensure_loaded?(Igniter) do
       |> ensure_browser_plug(pipeline)
       |> ensure_response_import()
       |> ensure_csrf_headers()
+      |> ensure_heex_annotations_disabled(opts)
       |> ensure_htmx_asset(opts)
     end
 
@@ -165,7 +179,23 @@ if Code.ensure_loaded?(Igniter) do
       end
     end
 
-    # 4. vendor htmx.min.js + import it from app.js --------------------------
+    # 4. disable HEEx debug annotations in config/dev.exs ---------------------
+
+    defp ensure_heex_annotations_disabled(igniter, opts) do
+      if opts[:keep_heex_annotations] do
+        igniter
+      else
+        Config.configure(
+          igniter,
+          "dev.exs",
+          :phoenix_live_view,
+          [:debug_heex_annotations],
+          false
+        )
+      end
+    end
+
+    # 5. vendor htmx.min.js + import it from app.js --------------------------
 
     defp ensure_htmx_asset(igniter, opts) do
       version = opts[:htmx_version] || @htmx_default_version
