@@ -39,6 +39,20 @@ defmodule Mix.Tasks.Phtmx.InstallTest do
     """)
   end
 
+  test "disables HEEx debug annotations in config/dev.exs" do
+    install()
+    |> assert_has_patch("config/dev.exs", """
+    - |  debug_heex_annotations: true,
+    + |  debug_heex_annotations: false,
+    """)
+  end
+
+  test "--keep-heex-annotations leaves config/dev.exs untouched" do
+    phx_test_project()
+    |> Igniter.compose_task("phtmx.install", ["--skip-asset-fetch", "--keep-heex-annotations"])
+    |> assert_unchanged("config/dev.exs")
+  end
+
   test "is idempotent — a second run makes no changes" do
     first = install() |> apply_igniter!()
 

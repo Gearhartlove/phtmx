@@ -22,10 +22,17 @@ mix igniter.install phtmx
 ```
 
 Options: `--pipeline` (default `browser`), `--htmx-version` (default `2.0.4`),
-and `--skip-asset-fetch` (wire the `app.js` import but don't download htmx -
-useful offline or in CI). Each edit is idempotent and, if it can't find its
-anchor, prints a notice with the exact snippet instead of guessing - and you
-review the full diff before anything is written.
+`--skip-asset-fetch` (wire the `app.js` import but don't download htmx -
+useful offline or in CI), and `--keep-heex-annotations` (leave HEEx debug
+annotations as configured instead of disabling them - see below). Each edit is
+idempotent and, if it can't find its anchor, prints a notice with the exact
+snippet instead of guessing - and you review the full diff before anything is
+written.
+
+By default the installer also disables HEEx debug annotations
+(`debug_heex_annotations: false` for `:phoenix_live_view` in `config/dev.exs`).
+Left enabled, htmx swaps scatter `<!-- <MyAppWeb...> -->` component-source
+comments across the DOM every time a fragment is swapped in.
 
 Prefer to wire it by hand? Add the dependency and follow **Setup** below:
 
